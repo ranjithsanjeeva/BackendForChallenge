@@ -1,6 +1,7 @@
 const express = require('express');
 var router = express.Router();
 var objectId = require('mongoose').Types.ObjectId;
+const { check, validationResult } = require('express-validator');
 
 var { Register } = require('../models/employee');
 
@@ -46,7 +47,20 @@ router.get('/:id',(req,resp) => {
     })
 })
 
-router.post('/', (req,resp) => {
+router.post('/', [
+    check('phoneNo').matches('^\\+(?:[0-9] ?){6,14}[0-9]$').withMessage("error1"),
+    check('email').matches('^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$').withMessage("error2"),
+    check('username').matches('^(?=.{5,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$'),
+    check('password').isLength({ min: 6 })
+  ], (req,resp) => {
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        console.log(errors)
+        // return resp.status(422).send(errors.errors[0].msg);
+        return resp.status(422).send(`Invalid details please check the details before register`);
+    }
+
     var emp = new Register({
         firstName : req.body.firstName,
         lastName : req.body.lastName,
