@@ -17,7 +17,6 @@ var User = require('../models/employee');
 // });
 
 router.get('/findUser', (req,resp) => {
-    console.log('Called findUser'+JSON.stringify(req.query));
     User.findOne(
         {
             username:req.query.username
@@ -26,9 +25,7 @@ router.get('/findUser', (req,resp) => {
         if(!err) {
             if(doc) {
                 if(doc.isValid(req.query.password)){
-                    console.log('kskksks')
-                    let token = jwt.sign({username:doc.username},'secret', {expiresIn : '3h'});
-                    console.log("Printing token:")
+                    let token = jwt.sign({username:doc.username},'dfgjhgfdghjg', {expiresIn : '3h'});
                     console.log(token)
                     return resp.status(200).json(token);
                 
@@ -49,15 +46,34 @@ router.get('/findUser', (req,resp) => {
     })
 });
 
-// router.get('/:id',(req,resp) => {
-//     if (!objectId.isValid(req.params.id))
-//         return resp.status(400).send(`No record with given id: ${req.params.id}`)
+router.get('/findUsers', (req,resp) => {
+    console.log('kkkk')
+    console.log(req.header('token'))
+    var decoded;
+
+      decoded = jwt.verify(req.header('token'), 'dfgjhgfdghjg');
     
-//     User.findById(req.params.id, (err,doc) => {
-//         if(!err) { resp.send(doc)}
-//         else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
-//     })
-// })
+    console.log(decoded.username)
+
+    User.findOne(
+        {
+            username:decoded.username
+        }
+        ,(err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+});
+router.get('/getUser',(req,resp) => {
+    if (!objectId.isValid(req.params.username))
+        return resp.status(400).send(`No record with given id: ${req.params.id}`)
+    
+    User.findById(req.params.id, (err,doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+    })
+})
 
 router.post('/', [
     check('phoneNo').matches('^\\+(?:[0-9] ?){6,14}[0-9]$').withMessage("error1"),
@@ -87,19 +103,16 @@ router.post('/', [
             username:req.body.username
         }
         ,(err, doc) => {
-        console.log("hhhhhh")
         if(!err) {
             if(doc) {
-                console.log("run")
                 return resp.status(500).send(`Username already taken`)
             }
             else {
                 user.save((err, docs) => {
-                    if(!err) { console.log("run2"); resp.send({}); }
+                    if(!err) {resp.send({}); }
                     else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
                 })
             }
-            console.log("run3");
         }
         else { 
             //console.log("Error in Employee" + JSON.stringify(err, undefined, 2))
