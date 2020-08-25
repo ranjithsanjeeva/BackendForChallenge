@@ -2,30 +2,42 @@ const express = require('express');
 var router = express.Router();
 var objectId = require('mongoose').Types.ObjectId;
 const { check, validationResult } = require('express-validator');
+var jwt = require('jsonwebtoken');
 
-var { Register } = require('../models/employee');
+var User = require('../models/employee');
 
 
-router.get('/', (req,resp) => {
-    Register.find((err, docs) => {
-        if(!err) {resp.send(docs); }
-        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
-    })
-});
+
+
+// router.get('/', (req,resp) => {
+//     Register.find((err, docs) => {
+//         if(!err) {resp.send(docs); }
+//         else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+//     })
+// });
 
 router.get('/findUser', (req,resp) => {
     console.log('Called findUser'+JSON.stringify(req.query));
-    Register.findOne(
+    User.findOne(
         {
-            username:req.query.username, 
-            password:req.query.password
+            username:req.query.username
         }
         ,(err, doc) => {
         if(!err) {
             if(doc) {
-                    console.log('Called findUser:Success');
-
-                 resp.send(doc); 
+                if(doc.isValid(req.query.password)){
+                    console.log('kskksks')
+                    let token = jwt.sign({username:doc.username},'secret', {expiresIn : '3h'});
+                    console.log("Printing token:")
+                    console.log(token)
+                    return resp.status(200).json(token);
+                
+                }
+                else{
+                    return resp.status(400).send(`Invalid cradential`);
+                }
+                // console.log('Called findUser:Success');
+                // resp.send(doc); 
             }
             else {
                 console.log('Called findUser:Failure');
@@ -37,15 +49,15 @@ router.get('/findUser', (req,resp) => {
     })
 });
 
-router.get('/:id',(req,resp) => {
-    if (!objectId.isValid(req.params.id))
-        return resp.status(400).send(`No record with given id: ${req.params.id}`)
+// router.get('/:id',(req,resp) => {
+//     if (!objectId.isValid(req.params.id))
+//         return resp.status(400).send(`No record with given id: ${req.params.id}`)
     
-    Register.findById(req.params.id, (err,doc) => {
-        if(!err) { resp.send(doc)}
-        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
-    })
-})
+//     User.findById(req.params.id, (err,doc) => {
+//         if(!err) { resp.send(doc)}
+//         else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+//     })
+// })
 
 router.post('/', [
     check('phoneNo').matches('^\\+(?:[0-9] ?){6,14}[0-9]$').withMessage("error1"),
@@ -53,7 +65,7 @@ router.post('/', [
     check('username').matches('^(?=.{5,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$'),
     check('password').isLength({ min: 6 })
   ], (req,resp) => {
-
+    console.log("king")
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         console.log(errors)
@@ -61,32 +73,33 @@ router.post('/', [
         return resp.status(422).send(`Invalid details please check the details before register`);
     }
 
-    var emp = new Register({
+    var user = new User({
         firstName : req.body.firstName,
         lastName : req.body.lastName,
         email : req.body.email,
         phoneNo : req.body.phoneNo,
         username : req.body.username,
-        password : req.body.password,
+        password : User.hashPassword(req.body.password),
     });
-    console.log(req.body.email)
-
-    Register.findOne(
+    
+    User.findOne(
         {
             username:req.body.username
         }
         ,(err, doc) => {
+        console.log("hhhhhh")
         if(!err) {
             if(doc) {
+                console.log("run")
                 return resp.status(500).send(`Username already taken`)
             }
             else {
-                emp.save((err, docs) => {
-                    if(!err) {resp.send({}); }
+                user.save((err, docs) => {
+                    if(!err) { console.log("run2"); resp.send({}); }
                     else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
                 })
             }
-           
+            console.log("run3");
         }
         else { 
             //console.log("Error in Employee" + JSON.stringify(err, undefined, 2))
@@ -98,32 +111,32 @@ router.post('/', [
    
 })
 
-router.put('/:id',(req,resp) => {
-    if (!objectId.isValid(req.params.id))
-        return resp.status(400).send(`No record with given id: ${req.params.id}`)
+// router.put('/:id',(req,resp) => {
+//     if (!objectId.isValid(req.params.id))
+//         return resp.status(400).send(`No record with given id: ${req.params.id}`)
     
-    var emp = {
-        name : req.body.name,
-        position : req.body.position,
-        office : req.body.office,
-        salary : req.body.salary,
-    }
+//     var emp = {
+//         name : req.body.name,
+//         position : req.body.position,
+//         office : req.body.office,
+//         salary : req.body.salary,
+//     }
 
-    Register.findByIdAndUpdate(req.params.id, { $set: emp}, { new: true}, (err,doc) => {
-        if(!err) { resp.send(doc)}
-        else { console.log('Error in updating :'+ JSON.stringify(err, undefined, 2))}
-    })
-});
+//     Register.findByIdAndUpdate(req.params.id, { $set: emp}, { new: true}, (err,doc) => {
+//         if(!err) { resp.send(doc)}
+//         else { console.log('Error in updating :'+ JSON.stringify(err, undefined, 2))}
+//     })
+// });
 
-router.delete('/:id',(req,resp) => {
-    if (!objectId.isValid(req.params.username))
-        return resp.status(400).send(`No record with given id: ${req.params.id}`)
+// router.delete('/:id',(req,resp) => {
+//     if (!objectId.isValid(req.params.username))
+//         return resp.status(400).send(`No record with given id: ${req.params.id}`)
 
-    Register.findByIdAndRemove(req.params.id, (err,doc) => {
-        if(!err) { resp.send(doc)}
-        else { console.log('Error in deleting :'+ JSON.stringify(err, undefined, 2))}
-    })
-});
+//     Register.findByIdAndRemove(req.params.id, (err,doc) => {
+//         if(!err) { resp.send(doc)}
+//         else { console.log('Error in deleting :'+ JSON.stringify(err, undefined, 2))}
+//     })
+// });
 
 
 
