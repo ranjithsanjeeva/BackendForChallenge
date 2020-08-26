@@ -25,8 +25,8 @@ router.get('/findUser', (req,resp) => {
         if(!err) {
             if(doc) {
                 if(doc.isValid(req.query.password)){
-                    let token = jwt.sign({username:doc.username},'dfgjhgfdghjg', {expiresIn : '3h'});
-                    console.log(token)
+                    let token = jwt.sign({_id:doc._id},'secret', {expiresIn : '3h'});
+                    //console.log(token)
                     return resp.status(200).json(token);
                 
                 }
@@ -37,7 +37,7 @@ router.get('/findUser', (req,resp) => {
                 // resp.send(doc); 
             }
             else {
-                console.log('Called findUser:Failure');
+                //console.log('Called findUser:Failure');
                 return resp.status(400).send(`No record with given username and  password`)
             }
            
@@ -47,17 +47,13 @@ router.get('/findUser', (req,resp) => {
 });
 
 router.get('/findUsers', (req,resp) => {
-    console.log('kkkk')
-    console.log(req.header('token'))
     var decoded;
-
-      decoded = jwt.verify(req.header('token'), 'dfgjhgfdghjg');
-    
-    console.log(decoded.username)
-
+    decoded = jwt.verify(req.header('token'), 'secret'); 
+    // console.log(decoded.username)
+    //console.log(decoded._id)
     User.findOne(
         {
-            username:decoded.username
+            _id:decoded._id
         }
         ,(err, doc) => {
         if(!err) { resp.send(doc)}
@@ -81,7 +77,7 @@ router.post('/', [
     check('username').matches('^(?=.{5,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$'),
     check('password').isLength({ min: 6 })
   ], (req,resp) => {
-    console.log("king")
+    // console.log("king")
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         console.log(errors)
@@ -141,15 +137,16 @@ router.post('/', [
 //     })
 // });
 
-// router.delete('/:id',(req,resp) => {
-//     if (!objectId.isValid(req.params.username))
-//         return resp.status(400).send(`No record with given id: ${req.params.id}`)
+router.delete('/:id',(req,resp) => {
+    console.log("inside delete")
+    if (!objectId.isValid(req.params.id))
+        return resp.status(400).send(`No record with given id: ${req.params.id}`)
 
-//     Register.findByIdAndRemove(req.params.id, (err,doc) => {
-//         if(!err) { resp.send(doc)}
-//         else { console.log('Error in deleting :'+ JSON.stringify(err, undefined, 2))}
-//     })
-// });
+    User.findByIdAndRemove(req.params.id, (err,doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in deleting :'+ JSON.stringify(err, undefined, 2))}
+    })
+});
 
 
 
