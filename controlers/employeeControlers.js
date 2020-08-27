@@ -15,62 +15,6 @@ var User = require('../models/employee');
 //         else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
 //     })
 // });
-
-router.get('/findUser', (req,resp) => {
-    User.findOne(
-        {
-            username:req.query.username
-        }
-        ,(err, doc) => {
-        if(!err) {
-            if(doc) {
-                if(doc.isValid(req.query.password)){
-                    let token = jwt.sign({_id:doc._id},'secret', {expiresIn : '3h'});
-                    //console.log(token)
-                    return resp.status(200).json(token);
-                
-                }
-                else{
-                    return resp.status(400).send(`Invalid cradential`);
-                }
-                // console.log('Called findUser:Success');
-                // resp.send(doc); 
-            }
-            else {
-                //console.log('Called findUser:Failure');
-                return resp.status(400).send(`No record with given username and  password`)
-            }
-           
-        }
-        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
-    })
-});
-
-router.get('/findUsers', (req,resp) => {
-    var decoded;
-    decoded = jwt.verify(req.header('token'), 'secret'); 
-    // console.log(decoded.username)
-    //console.log(decoded._id)
-    User.findOne(
-        {
-            _id:decoded._id
-        }
-        ,(err, doc) => {
-        if(!err) { resp.send(doc)}
-        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
-        
-    })
-});
-router.get('/getUser',(req,resp) => {
-    if (!objectId.isValid(req.params.username))
-        return resp.status(400).send(`No record with given id: ${req.params.id}`)
-    
-    User.findById(req.params.id, (err,doc) => {
-        if(!err) { resp.send(doc)}
-        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
-    })
-})
-
 router.post('/', [
     check('phoneNo').matches('^\\+(?:[0-9] ?){6,14}[0-9]$').withMessage("error1"),
     check('email').matches('^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$').withMessage("error2"),
@@ -120,6 +64,55 @@ router.post('/', [
    
 })
 
+router.get('/findUser', (req,resp) => {
+    User.findOne(
+        {
+            username:req.query.username
+        }
+        ,(err, doc) => {
+        if(!err) {
+            if(doc) {
+                if(doc.isValid(req.query.password)){
+                    let token = jwt.sign({_id:doc._id},'secret');
+                    //console.log(token)
+                    return resp.status(200).json(token);
+                
+                }
+                else{
+                    return resp.status(400).send(`Invalid cradential`);
+                }
+                // console.log('Called findUser:Success');
+                // resp.send(doc); 
+            }
+            else {
+                //console.log('Called findUser:Failure');
+                return resp.status(400).send(`No record with given username and  password`)
+            }
+           
+        }
+        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+    })
+});
+
+router.get('/findUsers', (req,resp) => {
+    var decoded;
+    decoded = jwt.verify(req.header('token'), 'secret'); 
+    // console.log(decoded.username)
+    //console.log(decoded._id)
+    User.findOne(
+        {
+            _id:decoded._id
+        }
+        ,(err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+});
+
+
+
+
 // router.put('/:id',(req,resp) => {
 //     if (!objectId.isValid(req.params.id))
 //         return resp.status(400).send(`No record with given id: ${req.params.id}`)
@@ -143,11 +136,19 @@ router.delete('/:id',(req,resp) => {
         return resp.status(400).send(`No record with given id: ${req.params.id}`)
 
     User.findByIdAndRemove(req.params.id, (err,doc) => {
-        if(!err) { resp.send(doc)}
+        if(!err) { 
+            console.log("king")
+            resp.send(doc)}
         else { console.log('Error in deleting :'+ JSON.stringify(err, undefined, 2))}
     })
 });
 
-
+router.get('/getAllUser',(req,resp) => {
+    User.find((err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+})
 
 module.exports = router;
