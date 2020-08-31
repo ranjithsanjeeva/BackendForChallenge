@@ -20,8 +20,9 @@ var schema = new Schema({
     lastName: {type:String, require:true},
     email : {type:String, require:true},
     phoneNo: {type:String, require:true},
-    username:{type:String, require:true},
-    password:{type:String, require:true}
+    username: {type:String, require:true},
+    password: {type:String, require:true},
+    message: {type:Array}
 });
 
 schema.statics.hashPassword = function hashPassword(password){
