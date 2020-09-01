@@ -5,7 +5,7 @@ const { check, validationResult } = require('express-validator');
 var jwt = require('jsonwebtoken');
 
 var User = require('../models/employee');
-
+var Post = require('../models/posts');
 
 
 
@@ -152,8 +152,8 @@ router.get('/getAllUser',(req,resp) => {
 })
 
 router.get('/update',(req,resp) => {
-    console.log(req.query.username),
-    console.log(req.query.message),
+    // console.log(req.query.username),
+    // console.log(req.query.message),
 
     User.updateOne(
       {username: req.query.username},
@@ -166,6 +166,32 @@ router.get('/update',(req,resp) => {
         }
       }
     );
-  });
+});
+
+router.post('/post', (req,resp) => {
+    console.log(req.body.message)
+    console.log(req.body.username)
+    console.log("king")
+    
+    var user = new Post({
+        message : req.body.message,
+        username : req.body.username,
+    });
+    
+    
+    user.save((err, docs) => {
+        if(!err) {resp.send({}); }
+        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+    })
+           
+})
+
+router.get('/post',(req,resp) => {
+    Post.find((err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+})
 
 module.exports = router;
