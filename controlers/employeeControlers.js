@@ -151,22 +151,22 @@ router.get('/getAllUser',(req,resp) => {
     })
 })
 
-router.get('/update',(req,resp) => {
-    // console.log(req.query.username),
-    // console.log(req.query.message),
+// router.get('/update',(req,resp) => {
+//     // console.log(req.query.username),
+//     // console.log(req.query.message),
 
-    User.updateOne(
-      {username: req.query.username},
-      { $push: { message: [req.query.message] } },
-      function(err, result) {
-        if (err) {
-          resp.send(err);
-        } else {
-          resp.send(result);
-        }
-      }
-    );
-});
+//     User.updateOne(
+//       {username: req.query.username},
+//       { $push: { message: [req.query.message] } },
+//       function(err, result) {
+//         if (err) {
+//           resp.send(err);
+//         } else {
+//           resp.send(result);
+//         }
+//       }
+//     );
+// });
 
 router.post('/post', (req,resp) => {
     console.log(req.body.message)
