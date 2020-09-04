@@ -6,6 +6,7 @@ var jwt = require('jsonwebtoken');
 
 var User = require('../models/employee');
 var Post = require('../models/posts');
+var Comment = require('../models/comments');
 
 
 
@@ -171,11 +172,11 @@ router.get('/getAllUser',(req,resp) => {
 router.post('/post', (req,resp) => {
     console.log(req.body.message)
     console.log(req.body.username)
-    console.log("king")
-    
+    // console.log("king")
     var user = new Post({
         message : req.body.message,
         username : req.body.username,
+        date : Date.now()
     });
     
     
@@ -188,6 +189,34 @@ router.post('/post', (req,resp) => {
 
 router.get('/post',(req,resp) => {
     Post.find((err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+})
+
+router.post('/comment', (req,resp) => {
+    console.log(req.body.comment)
+    console.log(req.body.postId)
+    console.log(req.body.commentowner)
+    // console.log("king")
+    var user = new Comment({
+        comment : req.body.comment,
+        postId : req.body.postId,
+        commentowner : req.body.commentowner,
+        date : Date.now()
+    });
+    
+    
+    user.save((err, docs) => {
+        if(!err) {resp.send({}); }
+        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+    })
+           
+})
+
+router.get('/comment',(req,resp) => {
+    Comment.find((err, doc) => {
         if(!err) { resp.send(doc)}
         else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
         
