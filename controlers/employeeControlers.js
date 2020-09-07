@@ -7,6 +7,8 @@ var jwt = require('jsonwebtoken');
 var User = require('../models/employee');
 var Post = require('../models/posts');
 var Comment = require('../models/comments');
+var Like = require('../models/likes');
+var Share = require('../models/shares');
 
 
 
@@ -170,8 +172,8 @@ router.get('/getAllUser',(req,resp) => {
 // });
 
 router.post('/post', (req,resp) => {
-    console.log(req.body.message)
-    console.log(req.body.username)
+    // console.log(req.body.message)
+    // console.log(req.body.username)
     // console.log("king")
     var user = new Post({
         message : req.body.message,
@@ -196,9 +198,9 @@ router.get('/post',(req,resp) => {
 })
 
 router.post('/comment', (req,resp) => {
-    console.log(req.body.comment)
-    console.log(req.body.postId)
-    console.log(req.body.commentowner)
+    // console.log(req.body.comment)
+    // console.log(req.body.postId)
+    // console.log(req.body.commentowner)
     // console.log("king")
     var user = new Comment({
         comment : req.body.comment,
@@ -221,6 +223,88 @@ router.get('/comment',(req,resp) => {
         else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
         
     })
+})
+
+router.post('/like',(req,resp)=>{
+    // console.log(req.body.liked)
+    var user = {
+        liked : req.body.liked,
+        postId : req.body.postId,
+        likerId : req.body.likerId,
+        likerUsername : req.body.likerUsername,
+        date : Date.now()
+    };
+    if (req.body.postId) {
+        Like.updateOne({postId: req.body.postId, likerId: req.body.likerId}, user, {upsert: true},  (err,doc)=>{
+            if(!err) { 
+                    resp.send(doc);
+                }
+            else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        });
+    }
+})
+
+router.get('/like',(req,resp) => {
+    Like.find((err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+})
+
+// router.post('/share', (req,resp) => {
+//     // console.log(req.body.message)
+//     // console.log(req.body.postUsername)
+//     // console.log(req.body.shareUsername)
+//     // console.log(req.body.postId)
+//     // console.log("king")
+//     var user = new Share({
+//         message : req.body.message,
+//         postUsername : req.body.postUsername,
+//         shareUsername : req.body.shareUsername,
+//         postId : req.body.postId,
+//         date : Date.now()
+//     });
+    
+    
+//     user.save((err, docs) => {
+//         if(!err) {resp.send({}); }
+//         else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+//     })
+           
+// })
+
+router.get('/share',(req,resp) => {
+    
+    Share.find((err, doc) => {
+        if(!err) { resp.send(doc)}
+        else { console.log('Error in retreving :'+ JSON.stringify(err, undefined, 2))}
+        
+    })
+})
+
+
+
+router.post('/share', (req,resp) => {
+    // console.log(req.body.message)
+    // console.log(req.body.username)
+    // console.log(req.body.postOwner)
+    // console.log(req.body.postId)
+    console.log("king")
+    var user = new Post({
+        message : req.body.message,
+        username : req.body.username,
+        postOwner : req.body.postOwner,
+        postId : req.body.postId,
+        date : Date.now()
+    });
+    
+    
+    user.save((err, docs) => {
+        if(!err) {resp.send({}); }
+        else { console.log("Error in Employee" + JSON.stringify(err, undefined, 2))}
+    })
+           
 })
 
 module.exports = router;

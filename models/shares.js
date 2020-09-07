@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
-var bcrypt = require('bcrypt');
+// var bcrypt = require('bcrypt');
 
 var schema = new Schema({
     message : {type:String, required:true},
-    username: {type:String, required:true},
-    postOwner : {type:String},
-    postId : {type:String},
+    postUsername: {type:String, required:true},
+    shareUsername : {type:String, required:true},
+    postId : {type:String, required:true},
     date : {type:Date, required:true}
 });
 
@@ -19,4 +19,4 @@ var schema = new Schema({
 // schema.methods.isValid = function(hashedpassword){
 //     return  bcrypt.compareSync(hashedpassword, this.password);
 // }
-module.exports = mongoose.model('Post',schema);
+module.exports = mongoose.model('Share',schema);
